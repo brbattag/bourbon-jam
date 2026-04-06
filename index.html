@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bryan's Blind Bourbon Jam Session — Scoring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Source+Sans+3:wght@300;400;600&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --amber:#B5651D;--amber-light:#F5EBE0;--amber-dark:#8B4513;
+  --dark:#1C1C1C;--mid:#555;--light:#999;--bg:#FBF8F4;
+  --white:#fff;--shadow:0 2px 16px rgba(0,0,0,0.08);
+  --fh:'Playfair Display',serif;--fb:'Source Sans 3',sans-serif;
+}
+body{font-family:var(--fb);background:var(--bg);color:var(--dark);min-height:100vh}
+.app{max-width:920px;margin:0 auto;padding-bottom:60px}
+
+/* Header */
+.header{background:var(--dark);padding:28px 32px 0;border-bottom:4px solid var(--amber)}
+.header h1{font-family:var(--fh);font-size:26px;color:var(--white);font-weight:900;letter-spacing:-.5px}
+.header-sub{font-family:var(--fh);font-style:italic;color:var(--amber);font-size:14px;margin-top:4px;margin-bottom:18px}
+.steps{display:flex}
+.step{flex:1;padding:9px 0;text-align:center;font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:#555;border-bottom:3px solid #333;cursor:default;transition:all .25s}
+.step.active{color:var(--amber);border-bottom-color:var(--amber)}
+.step.done{color:#777;border-bottom-color:#555;cursor:pointer}
+.step.done:hover{color:#aaa}
+
+/* Screens */
+.screen{padding:32px;display:none}
+.screen.active{display:block}
+.screen-title{font-family:var(--fh);font-size:22px;font-weight:700;margin-bottom:6px}
+.screen-sub{color:var(--mid);font-size:14px;margin-bottom:28px;line-height:1.5}
+
+/* Cards */
+.card{background:var(--white);border-radius:4px;box-shadow:var(--shadow);padding:24px;margin-bottom:16px}
+.card-title{font-family:var(--fh);font-size:15px;font-weight:700;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #eee;color:var(--dark)}
+
+/* Form elements */
+select,input[type=text]{width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:3px;font-family:var(--fb);font-size:14px;color:var(--dark);background:var(--white);transition:border .2s;-webkit-appearance:none}
+select:focus,input:focus{outline:none;border-color:var(--amber)}
+.field-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--light);margin-bottom:6px}
+
+/* Setup */
+.pour-row{display:grid;grid-template-columns:110px 1fr;align-items:center;gap:12px;margin-bottom:12px}
+.pour-badge{display:flex;align-items:center;gap:8px}
+.pour-num{width:32px;height:32px;border-radius:50%;background:var(--amber);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.pour-lbl{font-size:13px;font-weight:600;color:var(--mid)}
+
+/* Buttons */
+.btn{padding:11px 22px;border:none;border-radius:3px;font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.2px;display:inline-block}
+.btn-amber{background:var(--amber);color:var(--white)}
+.btn-amber:hover{background:var(--amber-dark)}
+.btn-outline{background:transparent;color:var(--amber);border:1.5px solid var(--amber)}
+.btn-outline:hover{background:var(--amber-light)}
+.btn-full{width:100%;text-align:center;padding:13px}
+.btn-sm{padding:7px 14px;font-size:13px}
+
+/* Entry */
+.entry-layout{display:grid;grid-template-columns:1fr 280px;gap:20px}
+@media(max-width:680px){.entry-layout{grid-template-columns:1fr}}
+.name-wrap{margin-bottom:18px}
+.pour-entry-row{display:grid;grid-template-columns:80px auto 70px;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0ebe6}
+.pour-entry-row:last-child{border-bottom:none}
+.pe-label{display:flex;align-items:center;gap:6px}
+.pe-num{width:26px;height:26px;border-radius:50%;background:var(--amber);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+.pe-txt{font-size:12px;color:var(--mid)}
+.rank-btns{display:flex;gap:4px}
+.rb{width:32px;height:32px;border:1.5px solid #ddd;background:var(--white);border-radius:3px;font-size:13px;font-weight:700;cursor:pointer;color:var(--mid);transition:all .15s;padding:0}
+.rb.sel{background:var(--amber);border-color:var(--amber);color:var(--white)}
+.rb:hover:not(.sel){border-color:var(--amber);color:var(--amber)}
+.da-btn{padding:5px 10px;border:1.5px solid #ddd;background:var(--white);border-radius:3px;font-size:12px;font-weight:600;cursor:pointer;color:var(--mid);transition:all .15s;white-space:nowrap}
+.da-btn.yes{background:var(--amber);border-color:var(--amber);color:var(--white)}
+.entry-actions{display:flex;gap:8px;margin-top:18px}
+.err{background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;padding:10px 14px;border-radius:3px;font-size:13px;margin-bottom:14px}
+.count-badge{background:var(--amber-light);border:1px solid var(--amber);border-radius:3px;padding:10px;font-size:13px;color:var(--amber-dark);font-weight:600;text-align:center;margin-bottom:12px}
+.guest-list{max-height:320px;overflow-y:auto}
+.guest-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f5f0eb;font-size:13px}
+.guest-item:last-child{border-bottom:none}
+.g-check{color:var(--amber);font-weight:700}
+.g-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:18px;padding:0;line-height:1;transition:color .15s}
+.g-del:hover{color:#c0392b}
+.col-head{display:grid;grid-template-columns:80px auto 70px;gap:10px;padding:4px 0 8px;border-bottom:1px solid #eee;margin-bottom:4px}
+.col-h{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--light)}
+
+/* Reveal */
+.reveal-wrap{background:var(--dark);border-radius:4px;padding:48px 32px;display:flex;flex-direction:column;align-items:center;min-height:60vh;justify-content:center}
+.reveal-title{font-family:var(--fh);font-size:28px;color:var(--white);margin-bottom:6px;text-align:center}
+.reveal-sub{font-family:var(--fh);font-style:italic;color:var(--amber);font-size:15px;margin-bottom:40px;text-align:center}
+.reveal-big-btn{background:var(--amber);color:var(--white);border:none;padding:18px 52px;font-family:var(--fh);font-size:20px;font-weight:700;cursor:pointer;border-radius:3px;transition:all .2s;letter-spacing:.3px}
+.reveal-big-btn:hover{background:var(--amber-dark);transform:scale(1.02)}
+.leaderboard{width:100%;max-width:580px;margin-top:8px}
+.lb-item{display:flex;align-items:center;gap:16px;padding:14px 20px;margin-bottom:8px;border-radius:3px;background:rgba(255,255,255,.06);opacity:0;transform:translateY(24px);transition:opacity .5s ease,transform .5s ease}
+.lb-item.vis{opacity:1;transform:translateY(0)}
+.lb-item.champ{background:var(--amber)!important;transform:translateY(0) scale(1.03)!important;opacity:1!important}
+.lb-place{font-family:var(--fh);font-size:20px;font-weight:900;color:rgba(255,255,255,.35);width:32px;flex-shrink:0}
+.lb-info{flex:1}
+.lb-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.75);margin-bottom:2px}
+.lb-bottle{font-size:15px;font-weight:600;color:var(--white)}
+.lb-score{font-size:14px;font-weight:600;color:rgba(255,255,255,.55)}
+.lb-item.champ .lb-score{color:rgba(255,255,255,.9)}
+.reveal-next{margin-top:32px;background:transparent;color:rgba(255,255,255,.7);border:1.5px solid rgba(255,255,255,.3);padding:11px 28px;font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer;border-radius:3px;transition:all .2s}
+.reveal-next:hover{border-color:rgba(255,255,255,.6);color:white}
+
+/* Profiles */
+.profiles-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap}
+.profiles-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.profiles-grid{grid-template-columns:1fr}}
+.p-card{background:var(--white);border-radius:4px;box-shadow:var(--shadow);padding:20px;border-top:3px solid var(--amber)}
+.p-name{font-family:var(--fh);font-size:18px;font-weight:700;margin-bottom:14px;color:var(--dark)}
+.rankings-mini{margin-bottom:14px}
+.r-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:12px;border-bottom:1px solid #f5f0eb}
+.r-row:last-child{border-bottom:none}
+.r-bottle{color:var(--dark)}
+.r-pts{color:var(--mid);font-variant-numeric:tabular-nums}
+.r-da{color:var(--amber);font-size:10px;margin-left:3px;font-weight:700}
+.cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.cat-primary{background:var(--amber);color:var(--white);padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.cat-secondary{background:var(--amber-light);color:var(--amber-dark);padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.near-tie-note{font-size:12px;color:var(--amber);font-style:italic;margin-bottom:10px}
+.p-desc{font-size:13px;color:var(--mid);line-height:1.65;margin-bottom:14px;font-style:italic}
+.p-loading{font-size:13px;color:var(--light);animation:pulse 1.5s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.recs-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--light);margin-bottom:7px}
+.recs-list{list-style:none}
+.recs-list li{font-size:12px;color:var(--dark);padding:3px 0 3px 14px;position:relative}
+.recs-list li::before{content:"•";position:absolute;left:0;color:var(--amber);font-size:13px;line-height:1.1}
+.gen-msg{text-align:center;padding:32px;color:var(--mid);font-style:italic}
+.divider{height:1px;background:linear-gradient(to right,transparent,var(--amber),transparent);margin:24px 0}
+
+/* Print */
+@media print{
+  .app-ui{display:none!important}
+  .print-section{display:block!important}
+  body{background:white}
+}
+.print-section{display:none}
+.pc{border:1px solid #B5651D;padding:16px;margin-bottom:14px;page-break-inside:avoid;font-family:Georgia,serif}
+.pc-name{font-size:17px;font-weight:700;border-bottom:1px solid #B5651D;padding-bottom:8px;margin-bottom:10px}
+.pl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#B5651D;margin-top:8px;margin-bottom:3px}
+.pr{display:flex;justify-content:space-between;font-size:12px;padding:2px 0}
+.pcats{font-size:13px;font-weight:700;color:#B5651D;margin-top:4px}
+.pdesc{font-size:12px;color:#555;font-style:italic;margin-top:6px;line-height:1.5}
+.precs{font-size:12px;margin-top:4px;color:#1C1C1C}
+.pfoot{font-size:10px;color:#B5651D;text-align:center;margin-top:10px;font-style:italic;font-family:Georgia,serif}
+.print-header{text-align:center;border-bottom:2px solid #B5651D;padding-bottom:12px;margin-bottom:20px;font-family:Georgia,serif}
+</style>
+</head>
+<body>
+<div class="app app-ui">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>Bryan's Blind Bourbon Jam Session</h1>
+    <div class="header-sub">Five Pours. No Setlist.</div>
+    <div class="steps">
+      <div class="step active" id="step-0" onclick="goToStep(0)">Setup</div>
+      <div class="step" id="step-1" onclick="goToStep(1)">Entry</div>
+      <div class="step" id="step-2" onclick="goToStep(2)">Reveal</div>
+      <div class="step" id="step-3" onclick="goToStep(3)">Profiles</div>
+    </div>
+  </div>
+
+  <!-- SCREEN 1: SETUP -->
+  <div class="screen active" id="screen-setup">
+    <div class="screen-title">Pour Setup</div>
+    <div class="screen-sub">Assign each pour number to the bottle it contains. These can be updated if the pouring order changes.</div>
+    <div class="card">
+      <div class="card-title">Pour Assignments</div>
+      <div id="pour-rows"></div>
+    </div>
+    <button class="btn btn-amber btn-full" onclick="goToStep(1)">Begin Entering Scores →</button>
+  </div>
+
+  <!-- SCREEN 2: ENTRY -->
+  <div class="screen" id="screen-entry">
+    <div class="screen-title">Score Entry</div>
+    <div class="screen-sub">Enter each guest's name and rankings. Ranks must be unique — 1 is least favorite, 5 is favorite.</div>
+    <div class="entry-layout">
+      <div>
+        <div class="card">
+          <div class="card-title">Current Guest</div>
+          <div id="entry-error"></div>
+          <div class="name-wrap">
+            <div class="field-label">Guest Name</div>
+            <input type="text" id="guest-name" placeholder="First and last name" onkeydown="if(event.key==='Enter')addGuest()">
+          </div>
+          <div class="col-head">
+            <div class="col-h">Pour</div>
+            <div class="col-h">Rank (1–5)</div>
+            <div class="col-h">Drink Again?</div>
+          </div>
+          <div id="pour-entry-rows"></div>
+          <div class="entry-actions">
+            <button class="btn btn-amber" style="flex:1" onclick="addGuest()">Add Guest</button>
+            <button class="btn btn-outline" onclick="clearEntry()">Clear</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="count-badge" id="guest-count">0 guests entered</div>
+        <div class="card" style="padding:16px">
+          <div class="card-title" style="margin-bottom:12px">Entered Guests</div>
+          <div class="guest-list" id="guest-list-display">
+            <div style="font-size:13px;color:var(--light);text-align:center;padding:16px 0">No guests yet</div>
+          </div>
+        </div>
+        <div id="reveal-cta" style="display:none">
+          <div class="divider"></div>
+          <button class="btn btn-amber btn-full" onclick="goToStep(2)">Go to Reveal →</button>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn btn-outline btn-sm" onclick="goToStep(0)">← Back to Setup</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: REVEAL -->
+  <div class="screen" id="screen-reveal">
+    <div class="reveal-wrap">
+      <div class="reveal-title">The Moment of Truth</div>
+      <div class="reveal-sub" id="reveal-guest-count">Guests have cast their votes</div>
+      <div id="reveal-content">
+        <button class="reveal-big-btn" onclick="doReveal()">Reveal the Champion</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: PROFILES -->
+  <div class="screen" id="screen-profiles">
+    <div class="profiles-header">
+      <div>
+        <div class="screen-title">Guest Profiles</div>
+        <div class="screen-sub" style="margin-bottom:0">Personalized whiskey personalities for every guest.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn btn-outline btn-sm" onclick="doPrint()">Print All →</button>
+      </div>
+    </div>
+    <div id="profiles-container">
+      <div class="gen-msg">Generating profiles — this will take a moment...</div>
+    </div>
+    <div style="margin-top:24px">
+      <button class="btn btn-outline btn-sm" onclick="goToStep(2)">← Back to Reveal</button>
+    </div>
+  </div>
+
+</div><!-- end app-ui -->
+
+<!-- PRINT SECTION -->
+<div class="print-section" id="print-section"></div>
+
+<script>
+// ── Constants ─────────────────────────────────────────────
+const BOTTLES = [
+  "Larceny Small Batch",
+  "James E. Pepper 1776",
+  "Buffalo Trace",
+  "Rowan's Creek",
+  "Dead Guy Whiskey"
+];
+
+const WEIGHTS = {
+  "Larceny Small Batch":  {smooth:3,classic:2,spicy:1,bold:1,unique:1},
+  "James E. Pepper 1776": {smooth:1,classic:2,spicy:3,bold:2,unique:1},
+  "Buffalo Trace":        {smooth:2,classic:3,spicy:1,bold:1,unique:1},
+  "Rowan's Creek":        {smooth:1,classic:2,spicy:1,bold:3,unique:2},
+  "Dead Guy Whiskey":     {smooth:2,classic:1,spicy:1,bold:1,unique:3}
+};
+
+const CAT_MAX = {smooth:32,classic:34,spicy:25,bold:29,unique:29};
+
+const RECS = {
+  "bold+classic":  ["Knob Creek 9 Year","Wild Turkey 101","Old Forester 1920","Elijah Craig Barrel Proof","Russell's Reserve 10 Year"],
+  "bold+smooth":   ["Knob Creek 9 Year","Maker's 46","Woodford Reserve","Elijah Craig Small Batch","Wild Turkey 101"],
+  "bold+spicy":    ["1792 Small Batch","Bulleit Bourbon","Four Roses Single Barrel","Old Forester 1920","Wild Turkey Rare Breed"],
+  "bold+unique":   ["Wild Turkey Rare Breed","Old Forester 1920","1792 Full Proof","Knob Creek Single Barrel","WhistlePig 10 Year Rye"],
+  "classic+smooth":["Woodford Reserve","Maker's Mark","Basil Hayden","Elijah Craig Small Batch","Buffalo Trace"],
+  "classic+spicy": ["Four Roses Small Batch","Bulleit Bourbon","1792 Small Batch","Old Grand-Dad 114","Evan Williams Bottled in Bond"],
+  "classic+unique":["Woodford Double Oaked","Angel's Envy","Michter's American Whiskey","Redbreast 12","Maker's 46"],
+  "smooth+spicy":  ["Four Roses Small Batch","Bulleit Bourbon","Maker's Mark","Woodford Reserve","1792 Small Batch"],
+  "smooth+unique": ["Woodford Double Oaked","Angel's Envy","Maker's 46","Jameson Black Barrel","Redbreast 12"],
+  "spicy+unique":  ["WhistlePig 10 Year Rye","Four Roses Single Barrel","Bulleit Rye","Old Grand-Dad 114","Dead Guy Whiskey"]
+};
+
+const CAT_LABEL = {smooth:"Smooth",classic:"Classic",spicy:"Spicy",bold:"Bold",unique:"Unique"};
+
+// ── State ─────────────────────────────────────────────────
+let pourMapping = {1:"Larceny Small Batch",2:"James E. Pepper 1776",3:"Buffalo Trace",4:"Rowan's Creek",5:"Dead Guy Whiskey"};
+let guests = [];
+let currentRanks = {1:null,2:null,3:null,4:null,5:null};
+let currentDA = {1:false,2:false,3:false,4:false,5:false};
+let profiles = {};
+let currentScreen = 0;
+
+// ── Navigation ────────────────────────────────────────────
+function goToStep(n) {
+  const screens = ['setup','entry','reveal','profiles'];
+  if(n===2 && guests.length===0) return;
+  if(n===3) return; // only via reveal button
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+screens[n]).classList.add('active');
+  document.querySelectorAll('.step').forEach((s,i)=>{
+    s.className='step';
+    if(i===n) s.classList.add('active');
+    else if(i<n) s.classList.add('done');
+  });
+  currentScreen = n;
+  if(n===1) renderPourEntryRows();
+  if(n===2) updateRevealGuestCount();
+}
+
+// ── Setup screen ──────────────────────────────────────────
+function renderSetup() {
+  const container = document.getElementById('pour-rows');
+  container.innerHTML = [1,2,3,4,5].map(n=>`
+    <div class="pour-row">
+      <div class="pour-badge">
+        <div class="pour-num">${n}</div>
+        <div class="pour-lbl">Pour #${n}</div>
+      </div>
+      <select onchange="pourMapping[${n}]=this.value">
+        ${BOTTLES.map(b=>`<option value="${b}" ${pourMapping[n]===b?'selected':''}>${b}</option>`).join('')}
+      </select>
+    </div>`).join('');
+}
+
+// ── Entry screen ──────────────────────────────────────────
+function renderPourEntryRows() {
+  const c = document.getElementById('pour-entry-rows');
+  c.innerHTML = [1,2,3,4,5].map(i=>`
+    <div class="pour-entry-row">
+      <div class="pe-label">
+        <div class="pe-num">${i}</div>
+        <div class="pe-txt">Pour ${i}</div>
+      </div>
+      <div class="rank-btns">
+        ${[1,2,3,4,5].map(r=>`<button class="rb ${currentRanks[i]===r?'sel':''}" onclick="setRank(${i},${r})">${r}</button>`).join('')}
+      </div>
+      <button class="da-btn ${currentDA[i]?'yes':''}" onclick="toggleDA(${i})">${currentDA[i]?'Yes':'No'}</button>
+    </div>`).join('');
+}
+
+function setRank(pourIdx, rank) {
+  currentRanks[pourIdx] = currentRanks[pourIdx]===rank ? null : rank;
+  renderPourEntryRows();
+  document.getElementById('entry-error').innerHTML='';
+}
+
+function toggleDA(pourIdx) {
+  currentDA[pourIdx] = !currentDA[pourIdx];
+  renderPourEntryRows();
+}
+
+function clearEntry() {
+  currentRanks={1:null,2:null,3:null,4:null,5:null};
+  currentDA={1:false,2:false,3:false,4:false,5:false};
+  document.getElementById('guest-name').value='';
+  document.getElementById('entry-error').innerHTML='';
+  renderPourEntryRows();
+}
+
+function showError(msg) {
+  document.getElementById('entry-error').innerHTML=`<div class="err">${msg}</div>`;
+}
+
+function addGuest() {
+  const name = document.getElementById('guest-name').value.trim();
+  if(!name){showError('Please enter a guest name.');return;}
+  const ranks = Object.values(currentRanks);
+  if(ranks.includes(null)){showError('Please enter a rank for all 5 pours.');return;}
+  if(new Set(ranks).size<5){showError('Each pour must have a unique rank (1\u20135). No duplicates.');return;}
+  const pours = [1,2,3,4,5].map(i=>({rank:currentRanks[i],drinkAgain:currentDA[i]}));
+  guests.push({name,pours});
+  clearEntry();
+  renderGuestList();
+}
+
+function removeGuest(idx) {
+  guests.splice(idx,1);
+  renderGuestList();
+}
+
+function renderGuestList() {
+  const c = document.getElementById('guest-count');
+  c.textContent = `${guests.length} guest${guests.length!==1?'s':''} entered`;
+  const l = document.getElementById('guest-list-display');
+  if(guests.length===0){
+    l.innerHTML='<div style="font-size:13px;color:var(--light);text-align:center;padding:16px 0">No guests yet</div>';
+    document.getElementById('reveal-cta').style.display='none';
+  } else {
+    l.innerHTML=guests.map((g,i)=>`
+      <div class="guest-item">
+        <span>${g.name}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="g-check">✓</span>
+          <button class="g-del" onclick="removeGuest(${i})" title="Remove">×</button>
+        </div>
+      </div>`).join('');
+    document.getElementById('reveal-cta').style.display='block';
+  }
+}
+
+// ── Calculations ──────────────────────────────────────────
+function calcLeaderboard() {
+  const totals={}, daVotes={}, fiveCounts={};
+  Object.values(pourMapping).forEach(b=>{ totals[b]=0; daVotes[b]=0; fiveCounts[b]=0; });
+  guests.forEach(g=>{
+    g.pours.forEach((p,i)=>{
+      const b=pourMapping[i+1];
+      totals[b]+=(p.rank||0)+(p.drinkAgain?1:0);
+      if(p.drinkAgain) daVotes[b]++;
+      if(p.rank===5) fiveCounts[b]++;
+    });
+  });
+  const sorted = Object.keys(totals).sort((a,b)=>{
+    if(totals[b]!==totals[a]) return totals[b]-totals[a];       // 1st: total points
+    if(daVotes[b]!==daVotes[a]) return daVotes[b]-daVotes[a];   // 2nd: drink again votes
+    return fiveCounts[b]-fiveCounts[a];                          // 3rd: number of personal fives
+  });
+  // Assign places — tied bottles after tiebreakers share a place
+  let place=1;
+  return sorted.map((bottle,idx)=>{
+    if(idx>0){
+      const prev=sorted[idx-1];
+      const trueTie = totals[bottle]===totals[prev] && daVotes[bottle]===daVotes[prev] && fiveCounts[bottle]===fiveCounts[prev];
+      if(!trueTie) place=idx+1;
+    }
+    return {bottle, score:totals[bottle], drinkAgain:daVotes[bottle], fives:fiveCounts[bottle], place};
+  });
+}
+
+function calcProfile(guest) {
+  const raw={smooth:0,classic:0,spicy:0,bold:0,unique:0};
+  guest.pours.forEach((p,i)=>{
+    const b=pourMapping[i+1];
+    const w=WEIGHTS[b]||{smooth:2,classic:2,spicy:2,bold:2,unique:2};
+    const s=(p.rank||0)+(p.drinkAgain?1:0);
+    Object.keys(raw).forEach(c=>{raw[c]+=s*w[c];});
+  });
+  const norm={};
+  Object.keys(raw).forEach(c=>{norm[c]=raw[c]/CAT_MAX[c];});
+  const sorted=Object.entries(norm).sort((a,b)=>b[1]-a[1]);
+  const [c1,s1]=sorted[0],[c2,s2]=sorted[1];
+  const nearTie=(s1-s2)<0.05;
+  // Always sort key alphabetically so classic+smooth and smooth+classic resolve identically
+  const key=[c1,c2].sort().join('+');
+  const recs=RECS[key]||RECS['classic+smooth'];
+  return {c1,c2,s1,s2,nearTie,key,recs,norm};
+}
+
+// ── Reveal ────────────────────────────────────────────────
+function updateRevealGuestCount() {
+  document.getElementById('reveal-guest-count').textContent=`${guests.length} guest${guests.length!==1?'s':''} have cast their votes`;
+}
+
+function doReveal() {
+  const lb = calcLeaderboard();
+  // Detect any true ties remaining after all tiebreakers
+  const trueTies = new Set();
+  lb.forEach((item,idx)=>{
+    if(idx>0 && lb[idx-1].place===item.place) {
+      trueTies.add(item.bottle); trueTies.add(lb[idx-1].bottle);
+    }
+  });
+  // Detect tiebreaker-resolved ties (same total, different DA or fives)
+  const tbResolved = new Set();
+  lb.forEach((item,idx)=>{
+    if(idx>0 && lb[idx-1].score===item.score && lb[idx-1].place!==item.place) {
+      tbResolved.add(item.bottle);
+    }
+  });
+
+  const rc = document.getElementById('reveal-content');
+  rc.innerHTML = `<div class="leaderboard" id="leaderboard">${lb.map(item=>{
+    const isChamp = item.place===1 && !trueTies.has(item.bottle);
+    const isCoChamp = item.place===1 && trueTies.has(item.bottle);
+    const isTBWin = tbResolved.has(item.bottle);
+    return `<div class="lb-item ${isChamp||isCoChamp?'champ':''}" id="lb-${item.bottle.replace(/[^a-z]/gi,'')}" style="transition-delay:0s">
+      <div class="lb-place">${item.place}</div>
+      <div class="lb-info">
+        ${isChamp?`<div class="lb-label">🏆 Champion</div>`:''}
+        ${isCoChamp?`<div class="lb-label">🏆 Co-Champions</div>`:''}
+        <div class="lb-bottle">${item.bottle}</div>
+        ${isTBWin?`<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">tiebreaker: drink again votes</div>`:''}
+      </div>
+      <div class="lb-score">${item.score} pts</div>
+    </div>`;
+  }).join('')}</div>
+  <button class="reveal-next" onclick="goToProfileScreen()">View Guest Profiles →</button>`;
+
+  // Animate from last place up to first
+  const reversed=[...lb].reverse();
+  const seen = new Set();
+  reversed.forEach((item,i)=>{
+    const elId='lb-'+item.bottle.replace(/[^a-z]/gi,'');
+    if(seen.has(elId)) return;
+    seen.add(elId);
+    setTimeout(()=>{
+      const el=document.getElementById(elId);
+      if(el) el.classList.add('vis');
+    },i*550+200);
+  });
+}
+
+function goToProfileScreen() {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-profiles').classList.add('active');
+  document.querySelectorAll('.step').forEach((s,i)=>{
+    s.className='step';
+    if(i===3) s.classList.add('active');
+    else s.classList.add('done');
+  });
+  currentScreen=3;
+  generateAllProfiles();
+}
+
+// ── Profiles ──────────────────────────────────────────────
+async function generateAllProfiles() {
+  const container = document.getElementById('profiles-container');
+  
+  // Build initial cards with loading state
+  const profileData = {};
+  guests.forEach(g=>{
+    profileData[g.name]={...calcProfile(g),loading:true,description:''};
+  });
+  profiles = profileData;
+  renderProfileCards();
+
+  // Generate descriptions sequentially
+  for(const guest of guests) {
+    const prof = profiles[guest.name];
+    const desc = await genDescription(guest, prof);
+    profiles[guest.name] = {...prof, loading:false, description:desc};
+    renderProfileCards();
+  }
+}
+
+function renderProfileCards() {
+  const container = document.getElementById('profiles-container');
+  if(Object.keys(profiles).length===0){
+    container.innerHTML='<div class="gen-msg">Generating profiles...</div>';
+    return;
+  }
+  container.innerHTML=`<div class="profiles-grid">${guests.map(g=>{
+    const prof=profiles[g.name];
+    if(!prof) return '';
+    return `<div class="p-card">
+      <div class="p-name">${g.name}</div>
+      <div class="rankings-mini">
+        ${g.pours.map((p,i)=>{
+          const bottle=pourMapping[i+1];
+          const total=(p.rank||0)+(p.drinkAgain?1:0);
+          return `<div class="r-row">
+            <span class="r-bottle">${bottle}</span>
+            <span class="r-pts">${p.rank}${p.drinkAgain?'<span class="r-da">+DA</span>':''} = ${total}</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="cats">
+        <span class="cat-primary">${CAT_LABEL[prof.c1]}</span>
+        <span class="cat-secondary">${CAT_LABEL[prof.c2]}</span>
+      </div>
+      ${prof.nearTie?`<div class="near-tie-note">Close call — your palate sits right between ${CAT_LABEL[prof.c1]} and ${CAT_LABEL[prof.c2]}.</div>`:''}
+      ${prof.loading?
+        `<div class="p-loading">Generating your profile...</div>`:
+        `<div class="p-desc">${prof.description}</div>`}
+      <div class="recs-head">Bottles to Explore</div>
+      <ul class="recs-list">${prof.recs.map(r=>`<li>${r}</li>`).join('')}</ul>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+async function genDescription(guest, profile) {
+  const lines=guest.pours.map((p,i)=>`${pourMapping[i+1]}: rank ${p.rank}${p.drinkAgain?', drink again':''}`).join('; ');
+  const prompt=`Write a warm, friendly 2-3 sentence whiskey personality note for a guest at Bryan's 50th birthday blind bourbon tasting. Guest: ${guest.name}. Rankings (5=favorite, 1=least): ${lines}. Style: ${CAT_LABEL[profile.c1]} + ${CAT_LABEL[profile.c2]}${profile.nearTie?' (very close between these two)':''}. Reference specific bottles they ranked highly. Keep it celebratory and fun. No em dashes.`;
+  try {
+    const r=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})
+    });
+    const d=await r.json();
+    return d.content[0].text;
+  } catch(e) {
+    return `${guest.name} showed a real preference for ${CAT_LABEL[profile.c1].toLowerCase()} and ${CAT_LABEL[profile.c2].toLowerCase()} pours tonight. Great taste across the board.`;
+  }
+}
+
+// ── Print ─────────────────────────────────────────────────
+function doPrint() {
+  const lb = calcLeaderboard();
+  const ps = document.getElementById('print-section');
+  let html=`<div class="print-header">
+    <div style="font-size:22px;font-weight:700">Bryan's Blind Bourbon Jam Session</div>
+    <div style="font-style:italic;color:#B5651D;font-size:13px;margin-top:4px">Five Pours. No Setlist. &nbsp;|&nbsp; May 2026</div>
+  </div>`;
+
+  guests.forEach(g=>{
+    const prof=profiles[g.name];
+    if(!prof) return;
+    html+=`<div class="pc">
+      <div class="pc-name">${g.name}</div>
+      <div class="pl">Tonight's Rankings</div>
+      ${g.pours.map((p,i)=>{
+        const bottle=pourMapping[i+1];
+        const total=(p.rank||0)+(p.drinkAgain?1:0);
+        return `<div class="pr"><span>${bottle}</span><span>Rank ${p.rank}${p.drinkAgain?' + Drink Again':''} = ${total} pts</span></div>`;
+      }).join('')}
+      <div class="pl">Whiskey Style</div>
+      <div class="pcats">${CAT_LABEL[prof.c1]} + ${CAT_LABEL[prof.c2]}${prof.nearTie?' (close call)':''}</div>
+      ${prof.description?`<div class="pdesc">${prof.description}</div>`:''}
+      <div class="pl">Bottles to Explore</div>
+      <div class="precs">${prof.recs.join('  \u2022  ')}</div>
+      <div class="pfoot">Bryan's Blind Bourbon Jam Session \u2022 May 2026</div>
+    </div>`;
+  });
+
+  html+=`<div class="pc">
+    <div class="pc-name">Tonight's Results</div>
+    ${lb.map(item=>`<div class="pr"><span>${item.place===1?'\uD83C\uDFC6 ':''} ${item.bottle}</span><span>${item.score} pts</span></div>`).join('')}
+    <div class="pfoot">Bryan's Blind Bourbon Jam Session \u2022 May 2026</div>
+  </div>`;
+
+  ps.innerHTML=html;
+  window.print();
+}
+
+// ── Init ──────────────────────────────────────────────────
+renderSetup();
+renderPourEntryRows();
+</script>
+</body>
+</html>
