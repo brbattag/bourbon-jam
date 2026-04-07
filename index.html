@@ -155,26 +155,14 @@ select:focus,input:focus{outline:none;border-color:var(--amber)}
     <h1>Bryan's Blind Bourbon Jam Session</h1>
     <div class="header-sub">Five Pours. No Setlist.</div>
     <div class="steps">
-      <div class="step active" id="step-0" onclick="goToStep(0)">Setup</div>
-      <div class="step" id="step-1" onclick="goToStep(1)">Entry</div>
-      <div class="step" id="step-2" onclick="goToStep(2)">Reveal</div>
-      <div class="step" id="step-3" onclick="goToStep(3)">Profiles</div>
+      <div class="step active" id="step-1">Entry</div>
+      <div class="step" id="step-2">Reveal</div>
+      <div class="step" id="step-3">Profiles</div>
     </div>
-  </div>
-
-  <!-- SCREEN 1: SETUP -->
-  <div class="screen active" id="screen-setup">
-    <div class="screen-title">Pour Setup</div>
-    <div class="screen-sub">Assign each pour number to the bottle it contains. These can be updated if the pouring order changes.</div>
-    <div class="card">
-      <div class="card-title">Pour Assignments</div>
-      <div id="pour-rows"></div>
-    </div>
-    <button class="btn btn-amber btn-full" onclick="goToStep(1)">Begin Entering Scores →</button>
   </div>
 
   <!-- SCREEN 2: ENTRY -->
-  <div class="screen" id="screen-entry">
+  <div class="screen active" id="screen-entry">
     <div class="screen-title">Score Entry</div>
     <div class="screen-sub">Enter each guest's name and rankings. Ranks must be unique — 1 is least favorite, 5 is favorite.</div>
     <div class="entry-layout">
@@ -212,9 +200,6 @@ select:focus,input:focus{outline:none;border-color:var(--amber)}
         </div>
       </div>
     </div>
-    <div style="margin-top:16px">
-      <button class="btn btn-outline btn-sm" onclick="goToStep(0)">← Back to Setup</button>
-    </div>
   </div>
 
   <!-- SCREEN 3: REVEAL -->
@@ -243,7 +228,7 @@ select:focus,input:focus{outline:none;border-color:var(--amber)}
       <div class="gen-msg">Generating profiles — this will take a moment...</div>
     </div>
     <div style="margin-top:24px">
-      <button class="btn btn-outline btn-sm" onclick="goToStep(2)">← Back to Reveal</button>
+      <button class="btn btn-outline btn-sm" onclick="goToStep(1)">← Back to Reveal</button>
     </div>
   </div>
 
@@ -297,9 +282,9 @@ let currentScreen = 0;
 
 // ── Navigation ────────────────────────────────────────────
 function goToStep(n) {
-  const screens = ['setup','entry','reveal','profiles'];
-  if(n===2 && guests.length===0) return;
-  if(n===3) return; // only via reveal button
+  const screens = ['entry','reveal','profiles'];
+  if(n===1 && guests.length===0) return;
+  if(n===2) return; // only via reveal button
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+screens[n]).classList.add('active');
   document.querySelectorAll('.step').forEach((s,i)=>{
@@ -308,8 +293,8 @@ function goToStep(n) {
     else if(i<n) s.classList.add('done');
   });
   currentScreen = n;
-  if(n===1) renderPourEntryRows();
-  if(n===2) updateRevealGuestCount();
+  if(n===0) renderPourEntryRows();
+  if(n===1) updateRevealGuestCount();
 }
 
 // ── Setup screen ──────────────────────────────────────────
@@ -510,10 +495,10 @@ function goToProfileScreen() {
   document.getElementById('screen-profiles').classList.add('active');
   document.querySelectorAll('.step').forEach((s,i)=>{
     s.className='step';
-    if(i===3) s.classList.add('active');
+    if(i===2) s.classList.add('active');
     else s.classList.add('done');
   });
-  currentScreen=3;
+  currentScreen=2;
   generateAllProfiles();
 }
 
@@ -629,7 +614,6 @@ function doPrint() {
 }
 
 // ── Init ──────────────────────────────────────────────────
-renderSetup();
 renderPourEntryRows();
 </script>
 </body>
