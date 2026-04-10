@@ -523,6 +523,26 @@ async function generateAllProfiles() {
   }
 }
 
+function sortedPours(guest) {
+  return guest.pours
+    .map((p,i)=>({...p, bottle:pourMapping[i+1]}))
+    .sort((a,b)=>b.rank-a.rank);
+}
+
+function smartFallback(guest, profile) {
+  const sorted = sortedPours(guest);
+  const top = sorted[0].bottle;
+  const second = sorted[1].bottle;
+  const daBottles = sorted.filter(p=>p.drinkAgain).map(p=>p.bottle);
+  const daLine = daBottles.length > 0
+    ? ` ${daBottles.length===1?daBottles[0]:daBottles.slice(0,-1).join(', ')+' and '+daBottles.slice(-1)} earned the Drink Again tick.`
+    : '';
+  const tieNote = profile.nearTie
+    ? ` It was a close call between ${CAT_LABEL[profile.c1]} and ${CAT_LABEL[profile.c2]} — your palate sits right at the intersection.`
+    : '';
+  return `${guest.name} gravitated toward ${top} as the top pour of the night, with ${second} close behind.${daLine} Tonight's results point toward a ${CAT_LABEL[profile.c1].toLowerCase()}, ${CAT_LABEL[profile.c2].toLowerCase()} palate.${tieNote}`;
+}
+
 function renderProfileCards() {
   const container = document.getElementById('profiles-container');
   if(Object.keys(profiles).length===0){
@@ -532,14 +552,14 @@ function renderProfileCards() {
   container.innerHTML=`<div class="profiles-grid">${guests.map(g=>{
     const prof=profiles[g.name];
     if(!prof) return '';
+    const sorted=sortedPours(g);
     return `<div class="p-card">
       <div class="p-name">${g.name}</div>
       <div class="rankings-mini">
-        ${g.pours.map((p,i)=>{
-          const bottle=pourMapping[i+1];
+        ${sorted.map(p=>{
           const total=(p.rank||0)+(p.drinkAgain?1:0);
           return `<div class="r-row">
-            <span class="r-bottle">${bottle}</span>
+            <span class="r-bottle">${p.bottle}</span>
             <span class="r-pts">${p.rank}${p.drinkAgain?'<span class="r-da">+DA</span>':''} = ${total}</span>
           </div>`;
         }).join('')}
@@ -568,9 +588,10 @@ async function genDescription(guest, profile) {
       body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})
     });
     const d=await r.json();
-    return d.content[0].text;
+    if(d.content && d.content[0] && d.content[0].text) return d.content[0].text;
+    return smartFallback(guest, profile);
   } catch(e) {
-    return `${guest.name} showed a real preference for ${CAT_LABEL[profile.c1].toLowerCase()} and ${CAT_LABEL[profile.c2].toLowerCase()} pours tonight. Great taste across the board.`;
+    return smartFallback(guest, profile);
   }
 }
 
@@ -589,10 +610,9 @@ function doPrint() {
     html+=`<div class="pc">
       <div class="pc-name">${g.name}</div>
       <div class="pl">Tonight's Rankings</div>
-      ${g.pours.map((p,i)=>{
-        const bottle=pourMapping[i+1];
+      ${sortedPours(g).map(p=>{
         const total=(p.rank||0)+(p.drinkAgain?1:0);
-        return `<div class="pr"><span>${bottle}</span><span>Rank ${p.rank}${p.drinkAgain?' + Drink Again':''} = ${total} pts</span></div>`;
+        return `<div class="pr"><span>${p.bottle}</span><span>Rank ${p.rank}${p.drinkAgain?' + Drink Again':''} = ${total} pts</span></div>`;
       }).join('')}
       <div class="pl">Whiskey Style</div>
       <div class="pcats">${CAT_LABEL[prof.c1]} + ${CAT_LABEL[prof.c2]}${prof.nearTie?' (close call)':''}</div>
